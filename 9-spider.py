@@ -213,4 +213,6 @@ async def crawl(config='config.json'):
     await session.close()
 
 if __name__ == '__main__':
+    t0 = time.time()
     asyncio.run(crawl())
+    logger.info('Cost {:.2f} seconds'.format(time.time() - t0))

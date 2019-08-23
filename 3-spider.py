@@ -119,4 +119,6 @@ def crawl(config='config.json'):
 
 
 if __name__ == '__main__':
+    t0 = time.time()
     crawl()
+    logger.info('Cost {:.2f} seconds'.format(time.time() - t0))

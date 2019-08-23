@@ -126,7 +126,7 @@ def crawl(dest_filename, multipart_chunksize, url):
         # 整个文件内容被成功下载后，将临时文件名修改回正式文件名、删除配置文件
         os.rename(temp_filename, official_filename)
         logger.info('{} downloaded'.format(official_filename))
-    logger.info('Cost {:.2f} seconds'.format(time.time() - t0))
+        logger.info('Cost {:.2f} seconds'.format(time.time() - t0))
 
 
 if __name__ == '__main__':
