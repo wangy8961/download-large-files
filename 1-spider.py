@@ -35,7 +35,7 @@ def crawl(dest_filename, multipart_chunksize, url):
             return
 
     # 分块下载，即使文件非常大，也不会撑爆内存
-    with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
+    with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
         r = custom_request('GET', url, info='all content', stream=True)
         if not r:  # 请求失败时，r 为 None
             logger.error('Failed to get all content on URL [{}]'.format(url))

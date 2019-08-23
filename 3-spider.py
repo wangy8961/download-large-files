@@ -44,7 +44,7 @@ def _fetch(url, dest_filename, multipart_chunksize):
     if r.status_code != 206:  # 不支持 Range 下载时
         logger.warning('The file [{}] does not support breakpoint retransmission'.format(official_filename))
         # 需要重新从头开始下载 (wb 模式)
-        with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
+        with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
             r = custom_request('GET', url, info='all content', stream=True)
             if not r:  # 请求失败时，r 为 None
                 logger.error('Failed to get all content on URL [{}]'.format(url))
@@ -80,7 +80,7 @@ def _fetch(url, dest_filename, multipart_chunksize):
         # 根据 HTTP headers 中的 Range 只下载文件的部分字节 (ab 模式)
         logger.debug('[{}] download from [Range: bytes={}-]'.format(official_filename, start))
         headers = {'Range': 'bytes=%d-' % start}  # start 无需+1，自己体会
-        with tqdm(total=file_size, initial=start, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
+        with tqdm(total=file_size, initial=start, unit='B', unit_scale=True, unit_divisor=1024, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
             r = custom_request('GET', url, info='Range: bytes={}-'.format(start), headers=headers, stream=True)
             if not r:  # 请求失败时，r 为 None
                 logger.error('Failed to download [Range: bytes={}-] on URL [{}]'.format(start, url))

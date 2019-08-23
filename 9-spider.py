@@ -97,7 +97,7 @@ async def _fetchOneFile(session, url, dest_filename=None, multipart_chunksize=8*
             if r.status != 206:  # 不支持 Range 下载时
                 logger.warning('The file [{}] does not support breakpoint retransmission'.format(official_filename))
                 # 需要重新从头开始下载 (wb 模式)
-                with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
+                with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
                     try:
                         async with session.get(url) as r:
                             async with aiofiles.open(temp_filename, 'wb') as fp:
@@ -178,7 +178,7 @@ async def _fetchOneFile(session, url, dest_filename=None, multipart_chunksize=8*
                 to_do_iter = asyncio.as_completed(to_do)
 
                 failed_parts = 0  # 下载失败的分块数目
-                with tqdm(total=file_size, initial=succeed_parts_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
+                with tqdm(total=file_size, initial=succeed_parts_size, unit='B', unit_scale=True, unit_divisor=1024, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
                     for future in to_do_iter:
                         result = await future
                         if result.get('failed'):
