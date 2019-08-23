@@ -1,0 +1,24 @@
+{
+    "files": [
+        {
+            "url": "http://192.168.40.121/Python-3.7.4.tar.xz",
+            "dest_filename": null,
+            "multipart_chunksize": 5242880
+        },
+        {
+            "url": "http://192.168.40.121/ubuntu-18.04.2-live-server-amd64.iso",
+            "dest_filename": null,
+            "multipart_chunksize": 8388608
+        },
+        {
+            "url": "http://192.168.40.121/CentOS-7-x86_64-Minimal-1611.iso",
+            "dest_filename": null,
+            "multipart_chunksize": 8388608
+        },
+        {
+            "url": "http://192.168.40.121/CentOS-7-x86_64-DVD-1611.iso",
+            "dest_filename": null,
+            "multipart_chunksize": 8388608
+        }
+    ]
+}
