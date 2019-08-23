@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+import aiofiles
 import click
 from functools import partial
 import json
@@ -34,11 +35,11 @@ async def _fetchByRange(semaphore, session, url, temp_filename, config_filename,
                     'Size': part_length
                 }
 
-                with open(temp_filename, 'rb+') as fp:  # 注意: 不能用 a 模式哦，那样的话就算用 seek(0, 0) 移动指针到文件开头后，还是会从文件末尾处追加
-                    fp.seek(start)  # 移动文件指针
+                async with aiofiles.open(temp_filename, 'rb+') as fp:  # 注意: 不能用 a 模式哦，那样的话就算用 seek(0, 0) 移动指针到文件开头后，还是会从文件末尾处追加
+                    await fp.seek(start)  # 移动文件指针
                     logger.debug('File point: {}'.format(fp.tell()))
                     binary_content = await r.read()  # Binary Response Content: access the response body as bytes, for non-text requests
-                    fp.write(binary_content)  # 写入已下载的字节
+                    await fp.write(binary_content)  # 写入已下载的字节
 
                 # 读取原配置文件中的内容
                 f = open(config_filename, 'r')
@@ -102,12 +103,12 @@ async def _fetchOneFile(url, dest_filename=None, multipart_chunksize=8*1024*1024
                     with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
                         try:
                             async with session.get(url) as r:
-                                with open(temp_filename, 'wb') as fp:
+                                async with open(temp_filename, 'wb') as fp:
                                     while True:
                                         chunk = await r.content.read(multipart_chunksize)
                                         if not chunk:
                                             break
-                                        fp.write(chunk)
+                                        await fp.write(chunk)
                                         bar.update(len(chunk))
                         except Exception as e:
                             logger.error('Failed to get all content on URL [{}], the reason is that {}'.format(url, e))
@@ -147,10 +148,9 @@ async def _fetchOneFile(url, dest_filename=None, multipart_chunksize=8*1024*1024
                         parts = range(parts_count)
 
                         # 由于 _fetchByRange() 中使用 rb+ 模式，必须先保证文件存在，所以要先创建指定大小的临时文件 (用0填充)
-                        f = open(temp_filename, 'wb')
-                        f.seek(file_size - 1)
-                        f.write(b'\0')
-                        f.close()
+                        async with aiofiles.open(temp_filename, 'wb') as fp:
+                            await fp.seek(file_size - 1)
+                            await fp.write(b'\0')
 
                         with open(config_filename, 'w') as fp:  # 创建配置文件，写入 ETag
                             cfg = {

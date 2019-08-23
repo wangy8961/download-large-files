@@ -24,7 +24,7 @@ def _fetchByRange(lock, url, temp_filename, config_filename, part_number, start,
 
     part_length = stop - start + 1
     if not r or len(r.content) != part_length:  # 请求失败时，r 为 None; 或者，突然网络故障了，连接被服务器强制关闭了，此时客户端读取的响应体的长度不足
-        logger.error('Part Number {} [Range: bytes={}-{}] download failed'.format(part_number, start, stop))
+        logger.error('[{}] Part Number {} [Range: bytes={}-{}] download failed'.format(temp_filename.strip('.swp'), part_number, start, stop))
         return {
             'failed': True  # 用于告知 _fetchByRange() 的调用方，此 Range 下载失败了
         }
@@ -42,7 +42,7 @@ def _fetchByRange(lock, url, temp_filename, config_filename, part_number, start,
     try:
         with open(temp_filename, 'rb+') as fp:  # 注意: 不能用 a 模式哦，那样的话就算用 seek(0, 0) 移动指针到文件开头后，还是会从文件末尾处追加
             fp.seek(start)  # 移动文件指针
-            logger.debug('File point: {}'.format(fp.tell()))
+            logger.debug('[{}] File point: {}'.format(temp_filename.strip('.swp'), fp.tell()))
             fp.write(r.content)  # 写入已下载的字节
         # 读取原配置文件中的内容
         f = open(config_filename, 'r')
@@ -54,7 +54,7 @@ def _fetchByRange(lock, url, temp_filename, config_filename, part_number, start,
         json.dump(cfg, f)
         f.close()
     except Exception as e:
-        logger.error('Part Number {} [Range: bytes={}-{}] download failed, the reason is that {}'.format(part_number, start, stop, e))
+        logger.error('[{}] Part Number {} [Range: bytes={}-{}] download failed, the reason is that {}'.format(temp_filename.strip('.swp'), part_number, start, stop, e))
         return {
             'failed': True  # 用于告知 _fetchByRange() 的调用方，此 Range 下载失败了
         }
@@ -62,7 +62,7 @@ def _fetchByRange(lock, url, temp_filename, config_filename, part_number, start,
         # 释放锁
         lock.release()
 
-    logger.debug('Part Number {} [Range: bytes={}-{}] downloaded'.format(part_number, start, stop))
+    logger.debug('[{}] Part Number {} [Range: bytes={}-{}] downloaded'.format(temp_filename.strip('.swp'), part_number, start, stop))
     return {
         'part': part,
         'failed': False  # 用于告知 _fetchByRange() 的调用方，此 Range 成功下载
@@ -85,7 +85,7 @@ def _fetchOneFile(url, dest_filename=None, multipart_chunksize=8*1024*1024):
         return
     file_size = int(r.headers['Content-Length'])
     ETag = r.headers['ETag']
-    logger.debug('File size: {} bytes, ETag: {}'.format(file_size, ETag))
+    logger.debug('[{}] File size: {} bytes, ETag: {}'.format(official_filename, file_size, ETag))
 
     # 如果正式文件存在
     if os.path.exists(official_filename):
@@ -126,7 +126,7 @@ def _fetchOneFile(url, dest_filename=None, multipart_chunksize=8*1024*1024):
         # 获取文件的总块数
         div, mod = divmod(file_size, multipart_chunksize)
         parts_count = div if mod == 0 else div + 1  # 计算出多少个分块
-        logger.debug('Chunk size: {} bytes, total parts: {}'.format(multipart_chunksize, parts_count))
+        logger.debug('[{}] Chunk size: {} bytes, total parts: {}'.format(official_filename, multipart_chunksize, parts_count))
 
         # 如果临时文件存在
         if os.path.exists(temp_filename):
@@ -163,7 +163,7 @@ def _fetchOneFile(url, dest_filename=None, multipart_chunksize=8*1024*1024):
                 }
                 json.dump(cfg, fp)
 
-        logger.debug('The remaining parts that need to be downloaded: {}'.format(set(parts)))
+        logger.debug('[{}] The remaining parts that need to be downloaded: {}'.format(official_filename, set(parts)))
 
         # 多线程并发下载
         workers = min(8, len(parts))

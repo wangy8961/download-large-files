@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+import aiofiles
 import json
 import os
 import time
@@ -48,12 +49,12 @@ async def _fetch(semaphore, session, url, dest_filename, multipart_chunksize):
                     with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
                         try:
                             async with session.get(url) as r:
-                                with open(temp_filename, 'wb') as fp:
+                                async with aiofiles.open(temp_filename, 'wb') as fp:
                                     while True:
                                         chunk = await r.content.read(multipart_chunksize)
                                         if not chunk:
                                             break
-                                        fp.write(chunk)
+                                        await fp.write(chunk)
                                         bar.update(len(chunk))
                         except Exception as e:
                             logger.error('Failed to get all content on URL [{}], the reason is that {}'.format(url, e))
@@ -87,12 +88,12 @@ async def _fetch(semaphore, session, url, dest_filename, multipart_chunksize):
                     with tqdm(total=file_size, initial=start, unit='B', unit_scale=True, unit_divisor=1024, ascii=True, desc=official_filename) as bar:  # 打印下载时的进度条，并动态显示下载速度
                         try:
                             async with session.get(url, headers=headers) as r:
-                                with open(temp_filename, 'ab') as fp:
+                                async with aiofiles.open(temp_filename, 'ab') as fp:
                                     while True:
                                         chunk = await r.content.read(multipart_chunksize)
                                         if not chunk:
                                             break
-                                        fp.write(chunk)
+                                        await fp.write(chunk)
                                         bar.update(len(chunk))
                         except Exception as e:
                             logger.error('Failed to download [Range: bytes={}-] on URL [{}], the reason is that {}'.format(start, url, e))
